@@ -1,0 +1,19 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
+import { askFinancialCoach } from '../services/ai/gemini';
+
+type BodyMessage = { role: 'user' | 'assistant'; content: string };
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const messages = (req.body?.messages || []) as BodyMessage[];
+    const reply = await askFinancialCoach({ messages });
+    return res.status(200).json({ reply });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({ error: message });
+  }
+}
